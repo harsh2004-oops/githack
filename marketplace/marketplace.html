@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trusted Suppliers for India's Street Food Vendors</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="/javascript/javascript.js"></script>
+
+</head>
+<body>
+
+     <!-- Header -->
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <i class="fas fa-utensils"></i>
+                <span>StreetFood Connect</span>
+            </div>
+           <nav>
+                <ul>
+                    <li><a href="/home/home.html">Home</a></li>
+                    <li><a href="/features/features.html">Features</a></li>
+                    <li><a href="/marketplace/marketplace.html">Marketplace</a></li>
+                    <li><a href="/howitworks/howitworks.html">How It Works</a></li>
+                    <li><a href="/testimonial/testimonials.html">Testimonials</a></li>
+                </ul>
+            </nav>
+            <!-- <div class="auth-buttons">
+                <button class="btn btn-outline" onclick="openModal('loginModal')">Login</button>
+                <button class="btn btn-primary" onclick="openModal('signupModal')">Sign Up</button>
+            </div> -->
+        </div>
+    </header>
+
+   
+    <!-- Marketplace Section -->
+    <section class="section marketplace" id="marketplace">
+        <div class="container">
+            <div class="section-title">
+                <h2>Verified Supplier Marketplace</h2>
+                <p>Find trusted suppliers for all your street food ingredients</p>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search for suppliers, ingredients, or locations...">
+                <button onclick="searchSuppliers()"><i class="fas fa-search"></i> Search</button>
+            </div>
+            <div class="supplier-grid" id="supplierGrid">
+                <!-- Suppliers will be loaded here dynamically -->
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Modals (hidden by default) -->
+    <div id="supplierSearchModal" class="modal" role="dialog" aria-hidden="true">
+        <!-- Modal content for finding suppliers -->
+    </div>
+
+    <div id="supplierSignupModal" class="modal" role="dialog" aria-hidden="true">
+        <!-- Modal content for supplier signup -->
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <!-- Footer content like contact info, links, etc. -->
+    </footer>
+
+  
+</body>
+</html>
