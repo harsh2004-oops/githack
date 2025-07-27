@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supplier Dashboard | SupplyChain Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #34495e;
+            --sidebar-width: 250px;
+            --header-height: 70px;
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Dashboard Styles */
+        .dashboard-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            transition: var(--transition);
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--primary), #1a2530);
+            color: white;
+            height: var(--header-height);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .dashboard-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .dashboard-title i {
+            color: var(--secondary);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-info img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--secondary);
+        }
+        
+        .user-details {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .user-name {
+            font-weight: 600;
+        }
+        
+        .user-role {
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+        
+        .dashboard-content {
+            display: flex;
+            flex: 1;
+        }
+        
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, var(--dark), var(--primary));
+            color: white;
+            height: calc(100vh - var(--header-height));
+            position: sticky;
+            top: var(--header-height);
+            transition: var(--transition);
+            box-shadow: 5px 0 15px rgba(0,0,0,0.05);
+            z-index: 100;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 2rem 0;
+        }
+        
+        .sidebar-menu li {
+            margin-bottom: 5px;
+        }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            padding: 0.9rem 1.5rem;
+            transition: var(--transition);
+            font-size: 1.05rem;
+            position: relative;
+        }
+        
+        .sidebar-menu a:hover, 
+        .sidebar-menu a.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+            padding-left: 2rem;
+        }
+        
+        .sidebar-menu a::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background-color: var(--secondary);
+            transform: scaleY(0);
+            transition: var(--transition);
+        }
+        
+        .sidebar-menu a.active::before,
+        .sidebar-menu a:hover::before {
+            transform: scaleY(1);
+        }
+        
+        .sidebar-menu i {
+            margin-right: 12px;
+            width: 24px;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            height: calc(100vh - var(--header-height));
+        }
+        
+        .dashboard-overview {
+            margin-bottom: 2.5rem;
+        }
+        
+        .overview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .overview-header h2 {
+            color: var(--dark);
+            font-size: 1.8rem;
+        }
+        
+        .date-filter {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .date-filter select {
+            padding: 0.6rem 1rem;
+            border-radius: 30px;
+            border: 1px solid #ddd;
+            background-color: white;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            outline: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .date-filter select:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 3px 15px rgba(52, 152, 219, 0.2);
+        }
+        
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+        
+        .metric-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--secondary);
+        }
+        
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .metric-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background-color: rgba(52, 152, 219, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--secondary);
+            font-size: 1.5rem;
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .metric-label {
+            color: #777;
+            font-size: 0.95rem;
+        }
+        
+        .metric-change {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .positive {
+            color: var(--success);
+        }
+        
+        .negative {
+            color: var(--danger);
+        }
+        
+        .charts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .chart-header h3 {
+            color: var(--dark);
+            font-size: 1.3rem;
+        }
+        
+        .chart-wrapper {
+            height: 300px;
+            position: relative;
+        }
+        
+        .recent-orders {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+        
+        .recent-orders h2 {
+            color: var(--dark);
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background-color: #f8f9fa;
+        }
+        
+        th {
+            text-align: left;
+            padding: 1rem;
+            color: var(--dark);
+            font-weight: 600;
+            border-bottom: 2px solid #eee;
+        }
+        
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            color: #555;
+        }
+        
+        .status {
+            padding: 0.4rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .delivered {
+            background-color: rgba(46, 204, 113, 0.15);
+            color: var(--success);
+        }
+        
+        .pending {
+            background-color: rgba(243, 156, 18, 0.15);
+            color: var(--warning);
+        }
+        
+        .shipped {
+            background-color: rgba(52, 152, 219, 0.15);
+            color: var(--secondary);
+        }
+        
+        .canceled {
+            background-color: rgba(231, 76, 60, 0.15);
+            color: var(--danger);
+        }
+        
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            border-radius: 30px;
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .btn-sm:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .notification-bell {
+            position: relative;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: white;
+        }
+        
+        .notification-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: var(--danger);
+            color: white;
+            font-size: 0.7rem;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .dashboard-footer {
+            background: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 3rem;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .charts {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+            
+            .sidebar-menu span {
+                display: none;
+            }
+            
+            .sidebar-menu a {
+                justify-content: center;
+                padding: 1rem;
+            }
+            
+            .sidebar-menu i {
+                margin-right: 0;
+                font-size: 1.4rem;
+            }
+            
+            .overview-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .metrics {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-header {
+                padding: 0 1rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Supplier Dashboard -->
+    <div class="dashboard-container" id="dashboardContainer">
+        <header class="dashboard-header">
+            <div class="dashboard-title">
+                <i class="fas fa-tachometer-alt"></i> Supplier Dashboard
+            </div>
+            <div class="user-info">
+                <div class="notification-bell">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-count">3</span>
+                </div>
+                <img src="https://randomuser.me/api/portraits/men/41.jpg" alt="User">
+                <div class="user-details">
+                    <div class="user-name">Robert Chen</div>
+                    <div class="user-role">Premium Supplier</div>
+                </div>
+            </div>
+        </header>
+        
+        <div class="dashboard-content">
+            <aside class="sidebar">
+                <ul class="sidebar-menu">
+                    <li><a href="#" class="active"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                    <li><a href="#"><i class="fas fa-box"></i> <span>Products</span></a></li>
+                    <li><a href="#"><i class="fas fa-shopping-cart"></i> <span>Orders</span></a></li>
+                    <li><a href="#"><i class="fas fa-file-invoice"></i> <span>Invoices</span></a></li>
+                    <li><a href="#"><i class="fas fa-chart-line"></i> <span>Analytics</span></a></li>
+                    <li><a href="#"><i class="fas fa-warehouse"></i> <span>Inventory</span></a></li>
+                    <li><a href="#"><i class="fas fa-users"></i> <span>Customers</span></a></li>
+                    <li><a href="#"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
+                    <li><a href="#"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+                </ul>
+            </aside>
+            
+            <main class="main-content">
+                <div class="dashboard-overview">
+                    <div class="overview-header">
+                        <h2>Overview</h2>
+                        <div class="date-filter">
+                            <select id="date-range">
+                                <option>Last 7 Days</option>
+                                <option selected>Last 30 Days</option>
+                                <option>This Month</option>
+                                <option>Last Month</option>
+                                <option>Custom Range</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="metrics">
+                        <div class="metric-card">
+                            <div class="metric-header">
+                                <div class="metric-label">Total Revenue</div>
+                                <div class="metric-icon">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </div>
+                            </div>
+                            <div class="metric-value">$12,674</div>
+                            <div class="metric-change positive">
+                                <i class="fas fa-arrow-up"></i> 12.5% from last month
+                            </div>
+                        </div>
+                        
+                        <div class="metric-card">
+                            <div class="metric-header">
+                                <div class="metric-label">New Orders</div>
+                                <div class="metric-icon">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </div>
+                            </div>
+                            <div class="metric-value">54</div>
+                            <div class="metric-change positive">
+                                <i class="fas fa-arrow-up"></i> 3.2% from last month
+                            </div>
+                        </div>
+                        
+                        <div class="metric-card">
+                            <div class="metric-header">
+                                <div class="metric-label">Pending Orders</div>
+                                <div class="metric-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                            </div>
+                            <div class="metric-value">32</div>
+                            <div class="metric-change negative">
+                                <i class="fas fa-arrow-down"></i> 5.7% from last month
+                            </div>
+                        </div>
+                        
+                        <div class="metric-card">
+                            <div class="metric-header">
+                                <div class="metric-label">Delivery Rate</div>
+                                <div class="metric-icon">
+                                    <i class="fas fa-truck"></i>
+                                </div>
+                            </div>
+                            <div class="metric-value">92%</div>
+                            <div class="metric-change positive">
+                                <i class="fas fa-arrow-up"></i> 2.4% from last month
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="charts">
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3>Revenue Overview</h3>
+                            <div class="chart-actions">
+                                <button class="btn-sm">Export</button>
+                            </div>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="revenue-chart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3>Order Statistics</h3>
+                            <div class="chart-actions">
+                                <button class="btn-sm">Export</button>
+                            </div>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="orders-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="recent-orders">
+                    <div class="recent-orders-header">
+                        <h2>Recent Orders</h2>
+                        <div>
+                            <input type="text" placeholder="Search orders..." class="search-input">
+                            <button class="btn-sm"><i class="fas fa-filter"></i> Filter</button>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>#ORD-001</td>
+                                <td>Global Retail Inc</td>
+                                <td>Jul 25, 2025</td>
+                                <td>$1,250.00</td>
+                                <td><span class="status delivered">Delivered</span></td>
+                                <td><button class="btn-sm">View</button></td>
+                            </tr>
+                            <tr>
+                                <td>#ORD-002</td>
+                                <td>Tech Solutions Ltd</td>
+                                <td>Jul 24, 2025</td>
+                                <td>$890.00</td>
+                                <td><span class="status pending">Pending</span></td>
+                                <td><button class="btn-sm">View</button></td>
+                            </tr>
+                            <tr>
+                                <td>#ORD-003</td>
+                                <td>Fashion Retail Group</td>
+                                <td>Jul 24, 2025</td>
+                                <td>$2,150.00</td>
+                                <td><span class="status shipped">Shipped</span></td>
+                                <td><button class="btn-sm">View</button></td>
+                            </tr>
+                            <tr>
+                                <td>#ORD-004</td>
+                                <td>Home Essentials Corp</td>
+                                <td>Jul 23, 2025</td>
+                                <td>$750.00</td>
+                                <td><span class="status delivered">Delivered</span></td>
+                                <td><button class="btn-sm">View</button></td>
+                            </tr>
+                            <tr>
+                                <td>#ORD-005</td>
+                                <td>Electro Gadgets LLC</td>
+                                <td>Jul 22, 2025</td>
+                                <td>$1,430.00</td>
+                                <td><span class="status canceled">Canceled</span></td>
+                                <td><button class="btn-sm">View</button></td>
+                            </tr>
+                            <tr>
+                                <td>#ORD-006</td>
+                                <td>Office Supplies Co</td>
+                                <td>Jul 21, 2025</td>
+                                <td>$980.00</td>
+                                <td><span class="status shipped">Shipped</span></td>
+                                <td><button class="btn-sm">View</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="pagination">
+                        <button class="btn-sm"><i class="fas fa-chevron-left"></i></button>
+                        <span>Page 1 of 3</span>
+                        <button class="btn-sm"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+            </main>
+        </div>
+        
+        <footer class="dashboard-footer">
+            <p>&copy; 2025 SupplyChain Pro. Supplier Dashboard v2.1</p>
+        </footer>
+    </div>
+
+    <script>
+        // Initialize charts
+        function initCharts() {
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenue-chart').getContext('2d');
+            const revenueChart = new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                    datasets: [{
+                        label: 'Revenue',
+                        data: [7500, 8100, 7900, 10300, 9700, 11500, 12674],
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#3498db',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: {
+                                size: 14
+                            },
+                            bodyFont: {
+                                size: 14
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                drawBorder: false,
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value;
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Orders Chart
+            const ordersCtx = document.getElementById('orders-chart').getContext('2d');
+            const ordersChart = new Chart(ordersCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                    datasets: [{
+                        label: 'Orders',
+                        data: [42, 48, 40, 54, 52, 60, 54],
+                        backgroundColor: [
+                            'rgba(52, 152, 219, 0.7)',
+                            'rgba(46, 204, 113, 0.7)',
+                            'rgba(155, 89, 182, 0.7)',
+                            'rgba(52, 152, 219, 0.7)',
+                            'rgba(46, 204, 113, 0.7)',
+                            'rgba(155, 89, 182, 0.7)',
+                            'rgba(52, 152, 219, 0.7)'
+                        ],
+                        borderColor: [
+                            '#3498db',
+                            '#2ecc71',
+                            '#9b59b6',
+                            '#3498db',
+                            '#2ecc71',
+                            '#9b59b6',
+                            '#3498db'
+                        ],
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                drawBorder: false,
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Initialize charts on page load
+        document.addEventListener('DOMContentLoaded', initCharts);
+        
+        // Simulate backend API calls
+        async function fetchDashboardData() {
+            try {
+                // In a real app, this would be a fetch() to your backend
+                console.log("Fetching dashboard data from backend...");
+                
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 800));
+                
+                return {
+                    revenue: 12674,
+                    orders: 54,
+                    pending: 32,
+                    deliveryRate: 92
+                };
+            } catch (error) {
+                console.error("Error fetching dashboard data:", error);
+                return null;
+            }
+        }
+        
+        // Update dashboard with data from backend
+        async function updateDashboard() {
+            const data = await fetchDashboardData();
+            if (data) {
+                console.log("Dashboard data updated:", data);
+                // In a real app, update the UI with this data
+            }
+        }
+        
+        // Initialize dashboard data
+        updateDashboard();
+    </script>
+</body>
+</html>
