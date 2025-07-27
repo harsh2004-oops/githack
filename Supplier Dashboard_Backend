@@ -1,0 +1,65 @@
+// server.js
+const express = require('express');
+const cors = require('cors');
+const app = express();
+const port = 3000;
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Mock database for demonstration
+const orders = [
+  { id: 1, customer: 'Global Retail Inc', date: '2025-07-25', amount: 1250, status: 'delivered' },
+  { id: 2, customer: 'Tech Solutions Ltd', date: '2025-07-24', amount: 890, status: 'pending' },
+  { id: 3, customer: 'Fashion Retail Group', date: '2025-07-24', amount: 2150, status: 'shipped' },
+  { id: 4, customer: 'Home Essentials Corp', date: '2025-07-23', amount: 750, status: 'delivered' },
+  { id: 5, customer: 'Electro Gadgets LLC', date: '2025-07-22', amount: 1430, status: 'canceled' }
+];
+
+// Serve the supplier dashboard HTML
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/supplier-dashboard.html');
+});
+
+// API endpoints
+app.get('/api/dashboard', (req, res) => {
+  const dashboardData = {
+    revenue: 12674,
+    orders: 54,
+    pending: 32,
+    deliveryRate: 92,
+    recentOrders: orders.slice(0, 5),
+    revenueTrend: [7500, 8100, 7900, 10300, 9700, 11500, 12674],
+    orderTrend: [42, 48, 40, 54, 52, 60, 54]
+  };
+  res.json(dashboardData);
+});
+
+app.get('/api/orders', (req, res) => {
+  res.json(orders);
+});
+
+app.get('/api/orders/:id', (req, res) => {
+  const order = orders.find(o => o.id === parseInt(req.params.id));
+  if (!order) return res.status(404).json({ message: 'Order not found' });
+  res.json(order);
+});
+
+app.put('/api/orders/:id', (req, res) => {
+  const order = orders.find(o => o.id === parseInt(req.params.id));
+  if (!order) return res.status(404).json({ message: 'Order not found' });
+  
+  // Update order status
+  if (req.body.status) {
+    order.status = req.body.status;
+  }
+  
+  res.json(order);
+});
+
+// Start server
+app.listen(port, () => {
+  console.log(`Supplier dashboard running at http://localhost:${port}`);
+  console.log(`Dashboard API: http://localhost:${port}/api/dashboard`);
+});
