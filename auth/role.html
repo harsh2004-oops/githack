@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Select Role</title>
+<style>
+  body { font-family: Arial; background: #f4f4f4; margin: 0; }
+  .container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+  button { width: 200px; padding: 15px; margin: 10px; font-size: 18px; background: orange; border: none; color: white; cursor: pointer; border-radius: 5px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>Choose Your Role</h2>
+  <button onclick="goToDashboard('customer')">Customer</button>
+  <button onclick="goToDashboard('supplier')">Supplier</button>
+</div>
+<script>
+if (!localStorage.getItem("logged_in")) {
+  window.location.href = "login.html";
+}
+function goToDashboard(role) {
+  if (role === 'customer') {
+    window.location.href = "customer-dashboard.html";
+  } else {
+    window.location.href = "supplier-dashboard.html";
+  }
+}
+</script>
+</body>
+</html>
